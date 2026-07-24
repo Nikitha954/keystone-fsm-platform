@@ -2,3 +2,4 @@ keystone-backend/.env
 keystone-frontend/.env
 **/target/
 **/node_modules/
+keystone-frontend/node_modules/
