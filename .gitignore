@@ -1,0 +1,4 @@
+keystone-backend/.env
+keystone-frontend/.env
+**/target/
+**/node_modules/
