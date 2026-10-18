@@ -23,13 +23,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 → redirect to login; show error toasts
+// Response interceptor: handle 401/expired session → redirect to login; show error toasts
 api.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
+  async (error: AxiosError<{ message?: string }>) => {
     const status = error.response?.status;
+    const isAuthRoute = error.config?.url?.includes('/auth/');
+    const errorMessage = error.response?.data?.message || '';
 
-    if (status === 401) {
+    if (status === 401 && !isAuthRoute) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
@@ -37,18 +39,16 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (status === 403) {
-      toast.error('Access denied: insufficient permissions');
+    if (status === 403 && !isAuthRoute) {
+      if (errorMessage.toLowerCase().includes('unauthorized') || errorMessage.toLowerCase().includes('token') || !localStorage.getItem('accessToken')) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+      toast.error(errorMessage || 'Access denied: insufficient permissions');
       return Promise.reject(error);
-    }
-
-    if (status === 409) {
-      // Let caller handle conflict (invalid status transition, duplicate)
-      return Promise.reject(error);
-    }
-
-    if (status === 500) {
-      toast.error('Server error. Please try again later.');
     }
 
     return Promise.reject(error);

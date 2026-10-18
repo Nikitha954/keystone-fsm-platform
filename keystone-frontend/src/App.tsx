@@ -9,10 +9,13 @@ import CreateWorkOrderPage from '@/pages/manager/CreateWorkOrderPage';
 import CustomersPage from '@/pages/manager/CustomersPage';
 import PartsPage from '@/pages/manager/PartsPage';
 import UsersPage from '@/pages/manager/UsersPage';
+import LiveMapPage from '@/pages/manager/LiveMapPage';
+import InventoryForecastPage from '@/pages/manager/InventoryForecastPage';
 import TechnicianDashboard from '@/pages/technician/TechnicianDashboard';
 import TechnicianWorkOrders from '@/pages/technician/TechnicianWorkOrders';
 import CustomerPortal from '@/pages/customer/CustomerPortal';
 import NotFoundPage from '@/pages/NotFoundPage';
+import UnauthorizedPage from '@/pages/UnauthorizedPage';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { isAuthenticated, user } = useAuth();
@@ -57,6 +60,12 @@ export default function App() {
             <PartsPage />
           </ProtectedRoute>
         } />
+        <Route path="forecast" element={
+          <ProtectedRoute roles={['ROLE_MANAGER']}>
+            <InventoryForecastPage />
+          </ProtectedRoute>
+        } />
+        <Route path="map" element={<LiveMapPage />} />
         <Route path="users" element={
           <ProtectedRoute roles={['ROLE_MANAGER']}>
             <UsersPage />
@@ -82,14 +91,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
-      <Route path="/unauthorized" element={
-        <div className="flex items-center justify-center h-screen text-gray-500">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-red-500 mb-2">403</h1>
-            <p className="text-lg">Access Denied</p>
-          </div>
-        </div>
-      } />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

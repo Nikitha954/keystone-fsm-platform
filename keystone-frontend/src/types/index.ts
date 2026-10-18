@@ -99,6 +99,14 @@ export interface WorkOrder {
   slaBreach: boolean;
   statusHistory?: StatusHistory[];
   totalTimeMinutes?: number;
+  triageCategory?: string;
+  triageConfidence?: number;
+  triageUrgency?: string;
+  estimatedDurationMinutes?: number;
+  workNotes?: string;
+  customerSignature?: string;
+  customerRating?: number;
+  customerFeedback?: string;
 }
 
 // ── Parts ─────────────────────────────────────────────────────────────────────
@@ -145,6 +153,76 @@ export interface Notification {
   workOrderId?: number;
   workOrderNumber?: string;
   createdAt: string;
+}
+
+// ── GPS Tracking ──────────────────────────────────────────────────────────────
+export interface LocationResponse {
+  userId: number;
+  latitude: number;
+  longitude: number;
+  heading?: number;
+  speed?: number;
+  recordedAt: string;
+}
+
+// ── Inventory Forecast ────────────────────────────────────────────────────────
+export interface InventoryForecast {
+  partId: number;
+  partNumber: string;
+  name: string;
+  currentStock: number;
+  minStock: number;
+  avgDailyUsage: number;
+  daysUntilDepletion?: number;
+  predictedDepletionDate?: string;
+  criticalAlert: boolean;
+}
+
+// ── AI Triage ─────────────────────────────────────────────────────────────────
+export interface TriageResponse {
+  workOrderId: number;
+  category: string;
+  confidence: number;
+  urgency?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  estimatedDurationMinutes?: number;
+  requiredSkills?: string[];
+  suggestedAction?: string;
+  suggestedTechnicianId?: number;
+  suggestedTechnicianName?: string;
+  suggestedTechnicianDistanceKm?: number;
+  suggestedTechnicianEtaMinutes?: number;
+  matchReason?: string;
+  triagedAt?: string;
+}
+
+// ── Route Optimization ────────────────────────────────────────────────────────
+export interface RouteStop {
+  stopNumber: number;
+  workOrderId: number;
+  woNumber: string;
+  title: string;
+  customerName: string;
+  siteAddress: string;
+  latitude: number;
+  longitude: number;
+  priority: string;
+  estimatedArrival: string;
+  durationMinutes: number;
+  distanceToNextKm: number;
+}
+
+export interface RouteOptimizationResponse {
+  technicianId: number;
+  technicianName: string;
+  startLocation: { latitude: number; longitude: number; address: string };
+  stops: RouteStop[];
+  totalDistanceKm: number;
+  originalDistanceKm: number;
+  distanceSavedKm: number;
+  fuelSavedLiters: number;
+  estimatedDriveTimeMinutes: number;
+  savingsPercentage: number;
+  polylineCoordinates: [number, number][];
 }
 
 // ── API wrappers ──────────────────────────────────────────────────────────────

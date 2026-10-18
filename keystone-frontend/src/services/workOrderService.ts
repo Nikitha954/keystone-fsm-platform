@@ -44,4 +44,19 @@ export const workOrderService = {
   delete: async (id: number) => {
     await api.delete(`${BASE}/${id}`);
   },
+
+  submitFeedback: async (id: number, data: { rating: number; feedback?: string; workNotes?: string; customerSignature?: string }) => {
+    const res = await api.post<ApiResponse<WorkOrder>>(`${BASE}/${id}/feedback`, data);
+    return res.data.data;
+  },
+
+  completeOffline: async (id: number, data: { workNotes?: string; customerSignature?: string; status?: string }) => {
+    const res = await api.post<ApiResponse<WorkOrder>>(`${BASE}/${id}/complete-offline`, data);
+    return res.data.data;
+  },
+
+  notifyEta: async (id: number, etaMinutes: number) => {
+    const res = await api.post<ApiResponse<void>>(`${BASE}/${id}/notify-eta?etaMinutes=${etaMinutes}`);
+    return res.data;
+  },
 };

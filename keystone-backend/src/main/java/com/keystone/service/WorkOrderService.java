@@ -146,6 +146,8 @@ public class WorkOrderService {
         // Notify relevant parties
         if (newStatus == WorkOrderStatus.COMPLETED) {
             notificationService.notifyCompletion(saved);
+        } else if (newStatus == WorkOrderStatus.IN_PROGRESS && saved.getCustomer() != null) {
+            notificationService.notifyTechnicianEta(saved, 15);
         }
 
         log.info("WO {} status changed: {} → {}", saved.getWoNumber(), oldStatus, newStatus);
@@ -192,6 +194,58 @@ public class WorkOrderService {
                 "Only NEW or CANCELLED work orders can be deleted");
         }
         workOrderRepository.delete(wo);
+    }
+
+    @Transactional(readOnly = true)
+    public void notifyEta(Long workOrderId, int etaMinutes) {
+        WorkOrder wo = findById(workOrderId);
+        notificationService.notifyTechnicianEta(wo, etaMinutes);
+    }
+
+    @Transactional
+    public WorkOrderResponse submitCustomerFeedback(Long workOrderId, CustomerFeedbackRequest req) {
+        WorkOrder wo = findById(workOrderId);
+        wo.setCustomerRating(req.getRating());
+        wo.setCustomerFeedback(req.getFeedback());
+        if (req.getWorkNotes() != null && !req.getWorkNotes().isBlank()) {
+            wo.setWorkNotes(req.getWorkNotes());
+        }
+        if (req.getCustomerSignature() != null && !req.getCustomerSignature().isBlank()) {
+            wo.setCustomerSignature(req.getCustomerSignature());
+        }
+        WorkOrder saved = workOrderRepository.save(wo);
+        log.info("Feedback logged for WO {}: {} stars - {}", wo.getWoNumber(), req.getRating(), req.getFeedback());
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public WorkOrderResponse saveOfflineWorkDetails(Long workOrderId, String notes, String signature, String newStatus) {
+        WorkOrder wo = findById(workOrderId);
+        if (notes != null && !notes.isBlank()) {
+            wo.setWorkNotes(notes);
+        }
+        if (signature != null && !signature.isBlank()) {
+            wo.setCustomerSignature(signature);
+        }
+        if (newStatus != null && !newStatus.isBlank()) {
+            try {
+                WorkOrderStatus target = WorkOrderStatus.valueOf(newStatus);
+                if (wo.canTransitionTo(target)) {
+                    User user = securityUtils.getCurrentUser();
+                    WorkOrderStatus oldStatus = wo.getStatus();
+                    wo.setStatus(target);
+                    if (target == WorkOrderStatus.COMPLETED) {
+                        wo.setCompletedAt(Instant.now());
+                        notificationService.notifyCompletion(wo);
+                    }
+                    recordStatusHistory(wo, oldStatus, target, user, "Synced from offline mobile client with signature");
+                }
+            } catch (Exception e) {
+                log.warn("Offline status transition skipped: {}", e.getMessage());
+            }
+        }
+        WorkOrder saved = workOrderRepository.save(wo);
+        return toResponse(saved);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -266,6 +320,14 @@ public class WorkOrderService {
             .createdAt(wo.getCreatedAt())
             .updatedAt(wo.getUpdatedAt())
             .slaBreach(slaBreach)
+            .triageCategory(wo.getTriageCategory() != null ? wo.getTriageCategory().name() : null)
+            .triageConfidence(wo.getTriageConfidence())
+            .triageUrgency(wo.getTriageUrgency())
+            .estimatedDurationMinutes(wo.getEstimatedDurationMinutes())
+            .workNotes(wo.getWorkNotes())
+            .customerSignature(wo.getCustomerSignature())
+            .customerRating(wo.getCustomerRating())
+            .customerFeedback(wo.getCustomerFeedback())
             .build();
     }
 

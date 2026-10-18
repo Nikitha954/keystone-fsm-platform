@@ -2,6 +2,7 @@ package com.keystone.domain.entity;
 
 import com.keystone.domain.enums.WorkOrderPriority;
 import com.keystone.domain.enums.WorkOrderStatus;
+import com.keystone.domain.enums.TriageCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -88,6 +89,34 @@ public class WorkOrder extends BaseEntity {
     @OneToMany(mappedBy = "workOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Attachment> attachments = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "triage_category", length = 50)
+    private TriageCategory triageCategory;
+
+    @Column(name = "triage_confidence")
+    private Double triageConfidence;
+
+    @Column(name = "triaged_at")
+    private Instant triagedAt;
+
+    @Column(name = "triage_urgency", length = 50)
+    private String triageUrgency;
+
+    @Column(name = "estimated_duration_minutes")
+    private Integer estimatedDurationMinutes;
+
+    @Column(name = "work_notes", columnDefinition = "TEXT")
+    private String workNotes;
+
+    @Column(name = "customer_signature", columnDefinition = "TEXT")
+    private String customerSignature;
+
+    @Column(name = "customer_rating")
+    private Integer customerRating;
+
+    @Column(name = "customer_feedback", columnDefinition = "TEXT")
+    private String customerFeedback;
 
     public boolean canTransitionTo(WorkOrderStatus target) {
         return this.status.canTransitionTo(target);

@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard, ClipboardList, Users, Building2,
-  Package, Settings, ChevronLeft, ChevronRight, Wrench, Shield
+  Package, ChevronLeft, ChevronRight, Wrench, Shield, Map, TrendingUp
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -16,11 +16,13 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard',    to: '/dashboard',   icon: LayoutDashboard, roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
-  { label: 'Work Orders',  to: '/workorders',  icon: ClipboardList,   roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
-  { label: 'Customers',    to: '/customers',   icon: Building2,       roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
-  { label: 'Parts',        to: '/parts',       icon: Package,         roles: ['ROLE_MANAGER'] },
-  { label: 'Users',        to: '/users',       icon: Users,           roles: ['ROLE_MANAGER'] },
+  { label: 'Dashboard',    to: '/dashboard',          icon: LayoutDashboard, roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
+  { label: 'Work Orders',  to: '/workorders',         icon: ClipboardList,   roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
+  { label: 'Live Map',     to: '/map',                icon: Map,             roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
+  { label: 'Customers',    to: '/customers',          icon: Building2,       roles: ['ROLE_MANAGER','ROLE_DISPATCHER'] },
+  { label: 'Parts',        to: '/parts',              icon: Package,         roles: ['ROLE_MANAGER'] },
+  { label: 'Forecast',     to: '/forecast',           icon: TrendingUp,      roles: ['ROLE_MANAGER'] },
+  { label: 'Users',        to: '/users',              icon: Users,           roles: ['ROLE_MANAGER'] },
   // Technician
   { label: 'My Dashboard', to: '/technician',         icon: LayoutDashboard, roles: ['ROLE_TECHNICIAN'] },
   { label: 'My Jobs',      to: '/technician/workorders', icon: Wrench,       roles: ['ROLE_TECHNICIAN'] },

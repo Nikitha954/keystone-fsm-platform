@@ -25,6 +25,11 @@ export const partService = {
     const res = await api.patch<ApiResponse<Part>>(`/parts/${id}/stock?quantity=${quantity}`);
     return res.data.data;
   },
+  reorder: async (id: number, quantity?: number) => {
+    const url = quantity ? `/parts/${id}/reorder?quantity=${quantity}` : `/parts/${id}/reorder`;
+    const res = await api.post<ApiResponse<Part>>(url);
+    return res.data.data;
+  },
 };
 
 // services/dashboardService.ts
@@ -72,6 +77,53 @@ export const userService = {
   },
   toggleStatus: async (id: number) => {
     const res = await api.patch<ApiResponse<User>>(`/users/${id}/toggle-status`);
+    return res.data.data;
+  },
+};
+
+// services/trackingService.ts
+import { LocationResponse, RouteOptimizationResponse } from '@/types';
+export const trackingService = {
+  updateLocation: async (data: {
+    userId: number; latitude: number; longitude: number;
+    heading?: number; speed?: number;
+  }) => {
+    const res = await api.post<ApiResponse<LocationResponse>>('/tracking/location', data);
+    return res.data.data;
+  },
+  getAllLatest: async () => {
+    const res = await api.get<ApiResponse<LocationResponse[]>>('/tracking/all-latest');
+    return res.data.data;
+  },
+  findNearest: async (lat: number, lng: number, limit = 5) => {
+    const res = await api.get<ApiResponse<LocationResponse[]>>('/tracking/nearest', {
+      params: { lat, lng, limit },
+    });
+    return res.data.data;
+  },
+  getOptimizedRoute: async (technicianId: number) => {
+    const res = await api.get<ApiResponse<RouteOptimizationResponse>>(`/tracking/route/${technicianId}`);
+    return res.data.data;
+  },
+  simulateDrive: async (technicianId: number) => {
+    const res = await api.post<ApiResponse<string>>(`/tracking/simulate/${technicianId}`);
+    return res.data;
+  },
+};
+
+// services/forecastService.ts
+import { InventoryForecast, TriageResponse } from '@/types';
+export const forecastService = {
+  getForecast: async () => {
+    const res = await api.get<ApiResponse<InventoryForecast[]>>('/parts/forecast');
+    return res.data.data;
+  },
+};
+
+// services/triageService.ts
+export const triageService = {
+  triage: async (workOrderId: number, text?: string) => {
+    const res = await api.post<ApiResponse<TriageResponse>>('/triage', { workOrderId, text });
     return res.data.data;
   },
 };

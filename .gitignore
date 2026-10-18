@@ -3,3 +3,8 @@ keystone-frontend/.env
 **/target/
 **/node_modules/
 keystone-frontend/node_modules/
+**/dist/
+*.log
+*.zip
+keystone.txt
+.vscode/

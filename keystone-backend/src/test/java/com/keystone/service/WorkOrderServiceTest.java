@@ -119,7 +119,6 @@ class WorkOrderServiceTest {
         req.setStatus(WorkOrderStatus.IN_PROGRESS); // COMPLETED → IN_PROGRESS is illegal
 
         when(workOrderRepository.findById(1L)).thenReturn(Optional.of(workOrder));
-        when(securityUtils.getCurrentUser()).thenReturn(manager);
 
         assertThatThrownBy(() -> workOrderService.updateStatus(1L, req))
                 .isInstanceOf(InvalidStatusTransitionException.class)
@@ -134,7 +133,6 @@ class WorkOrderServiceTest {
         req.setStatus(WorkOrderStatus.IN_PROGRESS);
 
         when(workOrderRepository.findById(1L)).thenReturn(Optional.of(workOrder));
-        when(securityUtils.getCurrentUser()).thenReturn(manager);
 
         assertThatThrownBy(() -> workOrderService.updateStatus(1L, req))
                 .isInstanceOf(InvalidStatusTransitionException.class);
@@ -147,7 +145,6 @@ class WorkOrderServiceTest {
         req.setStatus(WorkOrderStatus.NEW);
 
         when(workOrderRepository.findById(1L)).thenReturn(Optional.of(workOrder));
-        when(securityUtils.getCurrentUser()).thenReturn(manager);
 
         assertThatThrownBy(() -> workOrderService.updateStatus(1L, req))
                 .isInstanceOf(InvalidStatusTransitionException.class);

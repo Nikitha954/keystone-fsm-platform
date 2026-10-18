@@ -2,9 +2,9 @@ version: '3.9'
 
 services:
 
-  # ── PostgreSQL Database ────────────────────────────────────────────────────
+  # ── PostgreSQL + PostGIS ───────────────────────────────────────────────────
   postgres:
-    image: postgres:16-alpine
+    image: postgis/postgis:16-3.4-alpine
     container_name: keystone-db
     environment:
       POSTGRES_DB: keystone_db
@@ -29,10 +29,25 @@ services:
     container_name: keystone-backend
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      DB_USERNAME: keystone_user
+      DB_USER: keystone_user
       DB_PASSWORD: keystone_pass
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/keystone_db
+      DB_URL: jdbc:postgresql://postgres:5432/keystone_db
       JWT_SECRET: a2V5c3RvbmUtc2VjcmV0LWtleS1mb3ItZGV2ZWxvcG1lbnQtb25seS0yNTZiaXRz
+      # ── AI Triage ──────────────────────────────────────────────────────────
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-demo}
+      AI_MODEL_NAME: ${AI_MODEL_NAME:-gpt-4o-mini}
+      # ── Email ──────────────────────────────────────────────────────────────
+      MAIL_HOST: ${MAIL_HOST:-smtp.sendgrid.net}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-apikey}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@keystone.com}
+      # ── Twilio SMS ─────────────────────────────────────────────────────────
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      # ── Frontend URL (for email links) ─────────────────────────────────────
+      FRONTEND_URL: http://localhost:3000
     ports:
       - "8080:8080"
     depends_on:
@@ -46,6 +61,8 @@ services:
       context: ./keystone-frontend
       dockerfile: Dockerfile
     container_name: keystone-frontend
+    environment:
+      VITE_API_URL: /api/v1
     ports:
       - "3000:80"
     depends_on:

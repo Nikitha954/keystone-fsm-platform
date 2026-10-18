@@ -32,4 +32,12 @@ public class WorkOrderResponse {
     private boolean slaBreach;
     private List<StatusHistoryResponse> statusHistory;
     private Integer totalTimeMinutes;
+    private String triageCategory;
+    private Double triageConfidence;
+    private String triageUrgency;
+    private Integer estimatedDurationMinutes;
+    private String workNotes;
+    private String customerSignature;
+    private Integer customerRating;
+    private String customerFeedback;
 }

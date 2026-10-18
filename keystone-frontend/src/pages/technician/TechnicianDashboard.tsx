@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { workOrderService } from '@/services/workOrderService';
 import { WorkOrder } from '@/types';
 import { StatusBadge, PriorityBadge } from '@/components/common/Badges';
-import { ClipboardList, Clock, CheckCircle, AlertTriangle, Play, Pause } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle, AlertTriangle, Play, Pause, MapPin } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useGpsTracking } from '@/hooks/useGpsTracking';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -13,6 +15,14 @@ export default function TechnicianDashboard() {
   const [activeJobs, setActiveJobs] = useState<WorkOrder[]>([]);
   const [newJobs, setNewJobs] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tracking, setTracking] = useState(false);
+  const { startTracking, stopTracking } = useGpsTracking();
+  useOfflineSync();
+
+  const toggleTracking = () => {
+    if (tracking) { stopTracking(); setTracking(false); toast('GPS tracking stopped'); }
+    else { startTracking(); setTracking(true); toast.success('GPS tracking started'); }
+  };
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -56,6 +66,17 @@ export default function TechnicianDashboard() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Good day, {user?.firstName}!</h1>
         <p className="text-sm text-gray-500">Here's your workload for today</p>
       </div>
+
+      {/* GPS Tracking toggle */}
+      <button
+        onClick={toggleTracking}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          tracking ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }`}
+      >
+        <MapPin className={`w-4 h-4 ${tracking ? 'animate-pulse' : ''}`} />
+        {tracking ? 'Tracking ON — tap to stop' : 'Start GPS Tracking'}
+      </button>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">

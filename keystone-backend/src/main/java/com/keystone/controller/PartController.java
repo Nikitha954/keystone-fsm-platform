@@ -3,6 +3,7 @@ package com.keystone.controller;
 import com.keystone.dto.request.CreatePartRequest;
 import com.keystone.dto.request.LogPartUsageRequest;
 import com.keystone.dto.response.ApiResponse;
+import com.keystone.dto.response.InventoryForecastResponse;
 import com.keystone.dto.response.PartResponse;
 import com.keystone.service.PartService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +51,7 @@ public class PartController {
     }
 
     @PostMapping("/workorder/{workOrderId}/usage")
-    @PreAuthorize("hasRole('TECHNICIAN')")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER','TECHNICIAN')")
     @Operation(summary = "Log part usage for a work order (auto-deducts stock)")
     public ResponseEntity<ApiResponse<Void>> logUsage(
             @PathVariable Long workOrderId, @Valid @RequestBody LogPartUsageRequest request) {
@@ -64,5 +65,20 @@ public class PartController {
     public ResponseEntity<ApiResponse<PartResponse>> adjustStock(
             @PathVariable Long id, @RequestParam int quantity) {
         return ResponseEntity.ok(ApiResponse.success("Stock adjusted", partService.adjustStock(id, quantity)));
+    }
+
+    @PostMapping("/{id}/reorder")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER')")
+    @Operation(summary = "Automatically reorder stock when low inventory threshold is flagged")
+    public ResponseEntity<ApiResponse<PartResponse>> reorder(
+            @PathVariable Long id, @RequestParam(required = false) Integer quantity) {
+        return ResponseEntity.ok(ApiResponse.success("Stock reordered and inventory replenished", partService.reorderPart(id, quantity)));
+    }
+
+    @GetMapping("/forecast")
+    @PreAuthorize("hasRole('MANAGER')")
+    @Operation(summary = "Predictive inventory forecast using linear regression on 90-day usage history")
+    public ResponseEntity<ApiResponse<List<InventoryForecastResponse>>> forecast() {
+        return ResponseEntity.ok(ApiResponse.success(partService.getForecast()));
     }
 }

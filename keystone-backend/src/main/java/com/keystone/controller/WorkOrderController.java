@@ -86,4 +86,34 @@ public class WorkOrderController {
         workOrderService.deleteWorkOrder(id);
         return ResponseEntity.ok(ApiResponse.success("Work order deleted", null));
     }
+
+    @PostMapping("/{id}/notify-eta")
+    @PreAuthorize("hasAnyRole('MANAGER','DISPATCHER','TECHNICIAN')")
+    @Operation(summary = "Send ETA notification (email + SMS) to the customer")
+    public ResponseEntity<ApiResponse<Void>> notifyEta(
+            @PathVariable Long id, @RequestParam int etaMinutes) {
+        workOrderService.notifyEta(id, etaMinutes);
+        return ResponseEntity.ok(ApiResponse.success("ETA notification sent", null));
+    }
+
+    @PostMapping("/{id}/feedback")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Submit customer rating and feedback survey")
+    public ResponseEntity<ApiResponse<WorkOrderResponse>> submitFeedback(
+            @PathVariable Long id, @Valid @RequestBody com.keystone.dto.request.CustomerFeedbackRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Customer feedback submitted successfully",
+                workOrderService.submitCustomerFeedback(id, request)));
+    }
+
+    @PostMapping("/{id}/complete-offline")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Sync offline mobile work order notes, signature, and status")
+    public ResponseEntity<ApiResponse<WorkOrderResponse>> completeOffline(
+            @PathVariable Long id, @RequestBody java.util.Map<String, String> payload) {
+        String notes = payload.get("workNotes");
+        String signature = payload.get("customerSignature");
+        String status = payload.get("status");
+        return ResponseEntity.ok(ApiResponse.success("Offline work order details synced",
+                workOrderService.saveOfflineWorkDetails(id, notes, signature, status)));
+    }
 }

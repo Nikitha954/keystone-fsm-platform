@@ -57,7 +57,7 @@ export default function CreateWorkOrderPage() {
         customerId: Number(data.customerId),
         siteId: Number(data.siteId),
         assignedToId: data.assignedToId ? Number(data.assignedToId) : undefined,
-        dueDate: data.dueDate || undefined,
+        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
       });
       toast.success(`Work order ${wo.woNumber} created`);
       navigate(`/workorders/${wo.id}`);
