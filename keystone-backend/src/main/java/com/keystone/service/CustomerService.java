@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final com.keystone.repository.SiteRepository siteRepository;
     private final SecurityUtils securityUtils;
 
     @Transactional
@@ -32,7 +33,24 @@ public class CustomerService {
             .createdBy(securityUtils.getCurrentUser())
             .isActive(true)
             .build();
-        return toResponse(customerRepository.save(customer));
+        customer = customerRepository.save(customer);
+
+        // Auto-create default primary site so work orders can be created immediately
+        String siteAddress = (request.getAddress() != null && !request.getAddress().isBlank())
+            ? request.getAddress() : "Main Office, Dubai";
+        com.keystone.domain.entity.Site primarySite = com.keystone.domain.entity.Site.builder()
+            .customer(customer)
+            .name(request.getName() + " HQ")
+            .address(siteAddress)
+            .city("Dubai")
+            .country("UAE")
+            .latitude(new java.math.BigDecimal("25.2048"))
+            .longitude(new java.math.BigDecimal("55.2708"))
+            .isActive(true)
+            .build();
+        siteRepository.save(primarySite);
+
+        return toResponse(customer);
     }
 
     @Transactional(readOnly = true)

@@ -20,7 +20,7 @@ interface FormData {
 
 export default function CreateWorkOrderPage() {
   const navigate = useNavigate();
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     defaultValues: { priority: 'MEDIUM' }
   });
 
@@ -120,10 +120,38 @@ export default function CreateWorkOrderPage() {
 
           {/* Site */}
           <div>
-            <label className="label">Site <span className="text-red-500">*</span></label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="label mb-0">Site <span className="text-red-500">*</span></label>
+              {selectedCustomerId && sites.length === 0 && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const cust = customers.find(c => String(c.id) === selectedCustomerId);
+                    if (!cust) return;
+                    try {
+                      const newSite = await customerService.createSite({
+                        customerId: cust.id,
+                        name: `${cust.name} Main Site`,
+                        address: cust.address || 'Dubai, UAE',
+                        latitude: 25.2048,
+                        longitude: 55.2708
+                      });
+                      setSites([newSite]);
+                      setValue('siteId', String(newSite.id));
+                      toast.success('Primary site created and selected');
+                    } catch {
+                      toast.error('Failed to create site');
+                    }
+                  }}
+                  className="text-xs text-primary-600 hover:underline font-medium cursor-pointer"
+                >
+                  + Add Primary Site
+                </button>
+              )}
+            </div>
             <select {...register('siteId', { required: 'Site is required' })} className="input"
               disabled={!selectedCustomerId}>
-              <option value="">Select site...</option>
+              <option value="">{selectedCustomerId && sites.length === 0 ? 'No sites found — click "+ Add Primary Site"' : 'Select site...'}</option>
               {sites.map(s => <option key={s.id} value={s.id}>{s.name} – {s.address}</option>)}
             </select>
             {errors.siteId && <p className="text-red-500 text-xs mt-1">{errors.siteId.message}</p>}
